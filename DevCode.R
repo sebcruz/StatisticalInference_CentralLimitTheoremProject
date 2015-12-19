@@ -7,30 +7,36 @@ expDist = NULL #Var to store an Exponential Distribution
 expMeans = NULL #Var to store the means of each Exponential Distribution
 expSimData = NULL #Var to store the Exponential Distributions and Means
 
-# Sample Exp Distribution
-expDist = rexp(nbrSims, rate=lambda)
+# Example Exponential Distribution
+expDist = rexp(4000, rate=0.2)
 
 # Simulation Loop
-for (i in 1:nbrSims) {
-  expMeans = c(expMeans, mean(rexp(n, rate=lambda)))
+for (i in 1:1000) {
+  expMeans = c(expMeans, mean(rexp(40, rate=0.2)))
 }
 
-expSimData = data.frame(expDist, expMeans)
 
-hist(expSimData$expMeans)
-hist(expSimData$expDist)
+hist(expMeans)
+expMeans = NULL
+for (i in 1:1000) {
+  expMeans = c(expMeans, mean(sample(expDist, size=40, replace = TRUE)))
+}
+hist(expMeans)
 
 
 
 
-
-# Plot Exponential Distribution
+# Static Value Approach
 set.seed(999)
-sample = matrix(data=rexp(n, rate=expRate), nrow=n, ncol=nbrSims)
-x = apply(sample, MARGIN=1, FUN=mean)
+simData = matrix(data=rexp(40, rate=0.2), nrow=1000, ncol=40)
+meanData = apply(simData, MARGIN=1, FUN=mean)
 
-head(sample)
-summary(sample)
+hist(simData)
+hist(meanData)
+
+
+head(simData)
+summary(simData)
 
 hist(sample[,30])
 hist(x)
