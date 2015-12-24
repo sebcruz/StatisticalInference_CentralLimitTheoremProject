@@ -1,3 +1,13 @@
+set.seed(999) #For reporduceability
+expMeans = NULL
+for (i in 1:1000) {
+  expMeans = c(expMeans, mean(rexp(40, rate=0.2)))
+}
+expMeansPlot = as.data.frame(expMeans)
+colnames(expMeansPlot) = c("means")
+mean(expMeans)
+
+
 # Exp Dist Simulation
 # Declare and Set Variables
 lambda = 0.2 #Per class instructions, set rate parameter (aka lambda) at 0.2 for each Exponential Distribution 

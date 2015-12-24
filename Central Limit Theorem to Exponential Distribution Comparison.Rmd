@@ -6,68 +6,103 @@ output: html_document
 ---
 
 ## Overview
-The Central Limit Theorem (CLT) states that the distribution of averages of a iid variable will become like that of a standard normal as the sample size increases.  The following will show that this is true when samples from an Exponential Distribution are averaged and compared to a normal distribution.
+The Central Limit Theorem (CLT) states that the distribution of averages of a iid variable will become more like that of a standard normal as the sample size increases.  The following will show that this is true for samples from an Exponential Distribution are averaged and compared to a normal distribution.
 
 
 ## Simulations
+Exponential distributions mean of 1 / lambda (aka the rate) and follow an exponential curve.  For this exercise lambda is set at 0.2 so the theoretical mean is 1 / 0.2  or 5. 
 
-Include English explanations of the simulations you ran, with the accompanying R code. Your explanations should make clear what the R code accomplishes
+To verify the CTL, the R code below will take a sample of 40 observations from an exponential distribution (lambda = 0.2) and find the mean; repeating that process 1000 times.  The resultant dataset of 1000 means will then be plotted to examine the distribution and other characteristics. The vertical solid black line denotes the theoretical mean of 5 (1/lambda or 1/0.2), and the vertical solid red line denotes the simulation mean.
+
 ```{r}
 # Required Libraries
 library(ggplot2)
 
-# Example Exponential Distribution
-expDist = NULL
-set.seed(999) #For reporduceability
-expDist = data.frame(rexp(40000, rate=0.2))
-colnames(expDist) = c("values")
-
-ggplot(expDist, aes(x=values)) +
-  geom_histogram(colour="black", fill="white") +
-  ggtitle("40K Sample from Exponential Distribution") +
-  xlab("Values") +
-  ylab("Count")
-```
-
-
-```{r}
-# Exponential Distribution Simulation Loop
+# CLT Simulation Loop from the Mean of a Sample Exponential Distribution
 set.seed(999) #For reporduceability
 expMeans = NULL
 for (i in 1:1000) {
   expMeans = c(expMeans, mean(rexp(40, rate=0.2)))
 }
-expMeans = data.frame(expMeans)
-colnames(expMeans) = c("means")
+expMeansPlot = data.frame(expMeans) #ggplot requires data frames
+colnames(expMeansPlot) = c("means")
 
-ggplot(expMeans, aes(x=means)) +
+# Plot the Means Distribution
+ggplot(expMeansPlot, aes(x=means)) +
   geom_histogram(colour="black", fill="white", aes(y=..density..)) +
-  stat_function(fun=dnorm, args=list(mean=mean(expMeans$means),sd=sd(expMeans$means)),size = 1, colour = "black") +
-  geom_vline(xintercept = 5, size = 1, colour = "black") +
+  #stat_function(fun=dnorm, args=list(mean=mean(expMeansPlot$means),sd=sd(expMeansPlot$means)),size = 1, colour = "black") +
+  geom_vline(xintercept = 5, size = 1, colour = "black") + #Theoretical mean line
+  geom_vline(xintercept = mean(expMeansPlot$means), size = 0.5, colour = "red") + #Simulation mean line
   ggtitle("Mean of 1000 Exponential Distributions of n=40") +
-  xlab("Sampled Means") +
+  xlab("Simulation Means") +
   ylab("Density")
 ```
 
+### Simulated Mean vs Theoretical Mean
+The simulation output has a mean of `r mean(expMeans)` which is very close to the theoretical mean of 5 for an exponential distribution, denoted by the vertical solid black line.
+```{r}
+# Mean of Simulation Output
+mean(expMeans)
 
-## Sample Mean vs Theoretical Mean
-Include figures with titles. In the figures, highlight the means you are comparing. Include text that explains the figures and what is shown on them, and provides appropriate numbers. 
+# Theoretical Mean for an Exponential Distribution
+1/0.2
+```
+
+
  
-## Sample Variance vs Theoretical Variance
-Include figures (output from R) with titles. Highlight the variances you are comparing. Include text that explains your understanding of the differences of the variances. 
- 
-## Distribution
-Via figures and text, explain how one can tell the distribution is approximately normal.
-focus on the difference between the distribution of a large collection of random exponentials and the distribution of a large collection of averages of 40 exponentials. 
+### Sample Variance vs Theoretical Variance
+Exponential distributions have a varience of (1 / lambda)^2 / n or `r (1/0.2)^2/40`.  The variance of the simulated output is `r var(expMeans)`.
+```{r}
+# Variance of the Simulation Output
+var(expMeans)
+
+# Variance of the Theoretical Exponential Distribution
+(1/0.2)^2/40
+```
+
+### Distribution
+The below illustrates plot demonstrate two tenants of the Central Limit Theorem.  That the sampled means from an exponential distribution will become more normal than that original distribution it was taken from and that the more samples taken will result in a more normal distribution.
+
+The first plot is a frequency historgram of 40K samples from an Exponential Distribution with a lambda, or rate, of 0.2. The frequency histogram clearly shows a non-normal, exponential distribution.  This demonstates my first point.
+
+To demonstrate that the normality of the samples increases with size, a low resolution 100 simulations plot was created to contrast that of the 1000 run simulation.  Both plots of the simulation data have been overlayed with that of a normal distribution denoted by the solid black curve.  The low resultion simulation data has a shape that roughly follows that of the normal distribution.  The 1000 simulation plot adheres very closely to that normal distribution line as predicted by the Central Limith Theorem.
 
 ```{r}
-summary(cars)
+# Illustrative Example of a Large Sample Exponential Distribution
+expDist = NULL
+set.seed(999) #For reporduceability
+expDist = data.frame(rexp(40000, rate=0.2))
+colnames(expDist) = c("values")
+
+# Plot the Frequency Histogram of the Sampled Exponential Distribution
+ggplot(expDist, aes(x=values)) +
+  geom_histogram(colour="black", fill="white") +
+  ggtitle("Illustrative Example of Freq Hist Sampled from an Exponential Distribution") +
+  xlab("Values") +
+  ylab("Count")
+
+# Low Resolution 100 Simulations for Contrast
+set.seed(999) #For reporduceability
+expMeans100 = NULL
+for (i in 1:100) {
+  expMeans100 = c(expMeans100, mean(rexp(40, rate=0.2)))
+}
+expMeansPlot100 = data.frame(expMeans100)
+colnames(expMeansPlot100) = c("means")
+
+ggplot(expMeansPlot100, aes(x=means)) +
+  geom_histogram(colour="black", fill="white", aes(y=..density..)) +
+  stat_function(fun=dnorm, args=list(mean=mean(expMeansPlot100$means),sd=sd(expMeansPlot100$means)),size = 1, colour = "black") +
+  ggtitle("Mean of 100 Exponential Distributions of n=40") +
+  xlab("Simulation Means") +
+  ylab("Density")
+
+# Higher Resolution 1000 Simulations
+ggplot(expMeansPlot, aes(x=means)) +
+  geom_histogram(colour="black", fill="white", aes(y=..density..)) +
+  stat_function(fun=dnorm, args=list(mean=mean(expMeansPlot$means),sd=sd(expMeansPlot$means)),size = 1, colour = "black") +
+  ggtitle("Mean of 1000 Exponential Distributions of n=40") +
+  xlab("Simulation Means") +
+  ylab("Density")
 ```
 
-You can also embed plots, for example:
-
-```{r, echo=FALSE}
-plot(cars)
-```
-
-Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
