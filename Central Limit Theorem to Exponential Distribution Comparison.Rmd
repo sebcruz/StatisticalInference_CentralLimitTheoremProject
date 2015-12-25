@@ -2,7 +2,7 @@
 title: "Central Limit Theorem to Exponential Distribution Comparison"
 author: "Sebastian Cruz"
 date: "December 18, 2015"
-output: html_document
+output: pdf_document
 ---
 
 ## Overview
