@@ -1,0 +1,174 @@
+---
+title: "Tooth Growth, Exploratory Data Analysis and Comparison"
+author: "Sebastian Cruz"
+date: "December 25, 2015"
+output: word_document
+---
+
+##Synopsis
+To compare the impact of two supplements of Vitamin C at three dossages (0.5mg, 1.0mg, 2.0mg) on tooth growth in guinea pigs. The length of teeth in six groups of ten guinea pigs were measured in the experiment.  Each guinea pig received one of the three doses by one of the supplements.  Supplement type and dosage do impact guinea pig tooth growth, with Orange Juice resulting in a higher mean tooth growth at 0.5mg and 1.0mg dosages.  No statistically significant difference was found at the 2.0mg dose between supplement types.  Overall and regardless of dose, Orange Juice and Ascorbic Acid resulted in about the same mean tooth growth.
+
+Original study authored by Crampton, E. W. (1947) The growth of the odontoblast of the incisor teeth as a criterion of vitamin C intake of the guinea pig. *The Journal of Nutrition* 33(5): 491–504. [http://jn.nutrition.org/content/33/5/491.full.pdf](http://jn.nutrition.org/content/33/5/491.full.pdf)
+
+###Null Hypothesis
+There are no differences in the mean tooth length between the supplement types of Orange Juice and Ascorbic Acid and dosage.
+
+##Data Summary and Exploration
+The ToothGrowth dataset contains 60 observations and 3 variables (Tooth Length, Supplement Type, and Dosage). The ToothGrowth dataset is converted to a data table and relabled for clarity.  Dosage and Supplement are made into factors as we will be comparing these groups.
+```{r loadlibs, echo=FALSE}
+#Required Libraries
+library(datasets)
+library(data.table)
+library(ggplot2)
+
+#Load and Process Tooth Growth Dataset
+dtToothGrowth = data.table(ToothGrowth) #Convert to data.table
+names(dtToothGrowth) <- c("length", "supplement", "dose") #
+levels(dtToothGrowth$supplement) = c('Orange Juice','Ascorbic Acid')
+dtToothGrowth$doseFactor = factor(dtToothGrowth$dose) #Dose as a Factor for use in ggplot
+```
+
+###Summary
+Summary metrics by Supplement and Dose
+```{r datasummary, echo=FALSE}
+#Summerize Data by Supplement and Dose
+dtToothGrowthSummary = 
+  dtToothGrowth[, 
+    list(
+      n = nrow(.SD)
+      ,Min = min(length)
+      ,Q1 = quantile(length, probs = 0.25)
+      ,Median = median(length)
+      ,Mean = mean(length)
+      ,Q3 = quantile(length, probs = 0.75)
+      ,Max = max(length)
+      ,StdDev = sd(length)
+    ),
+    by = list(supplement, dose)
+  ]
+
+#ToothGrowth Summary by Supplement and Dose
+dtToothGrowthSummary
+```
+
+###Exploratory Analysis
+The violin plots show that the distribution of teeth length tends to be shifted higher and tend to be longer than the equivalent dose with Ascorbic Acid with the exception of the 2.0mg dose.
+
+```{r violinplot, echo=FALSE}
+#Tooth Length by Supplement and Dose Violin Plot
+ggplot(dtToothGrowth, aes(x=supplement, y=length)) +
+  geom_violin(aes(fill=doseFactor)) +
+  ggtitle("Violin Plot of Tooth Length by Supplement and Dose") +
+  xlab("Supplement") +
+  ylab("Tooth Length")
+```
+
+The box plots show that the distribution of teeth length values tend to have wider distributions that are larger and with higher means than the equivalent dose with Ascorbic Acid with the exception of the 2.0mg dose.
+
+```{r boxplot, echo=FALSE}
+#Tooth Length by Supplement and Dose Box Plot
+ggplot(dtToothGrowth, aes(x=supplement, y=length)) +
+  geom_boxplot(aes(fill=doseFactor)) +
+  ggtitle("Box Plot of Tooth Length by Supplement and Dose") +
+  xlab("Supplement") +
+  ylab("Tooth Length")
+```
+
+##Confidence Intervals and Hypothesis Testing 
+The following will test our hypothesis to determine the significance of any differences between the mean tooth length by supplement and dose.  The confidence interval will be set at 95% and hypothesis testing will utilize $\alpha = 0.05$.
+
+###Assumptions
+T-test are conducted with the assumption that the length data follows a normal distribution, that the guinea pigs were given their dose and supplement assignments at random, thus making the groups independent. The confidence intervals will be unpaird.
+
+###Tooth Length by Supplement Mean Comparison
+The Null Hypothesis is that the mean tooth length values for Orange Juice and Ascorbic Acid are not different in a statistically significant way.  The alternative hypothesis is that the mean differences are statistically significant.
+
+```{r ttestSupplement, echo=FALSE}
+#Welch Two Sample t-test
+t.test(
+  length ~ supplement
+  ,data = dtToothGrowth
+  ,paired = FALSE
+  ,var.equal = FALSE
+)
+```
+
+As the 95% confidence interval contains zero and the p-value is greater than $\alpha = 0.05$ at 0.06063 we cannot reject $H_{0}$ and conclude there is no statistically significant difference in tooth length regardless of dose between either supplement.
+
+###0.5mg Dose Tooth Lenth by Supplement Mean Comparison
+The Null Hypothesis is that the mean tooth length values for Orange Juice and Ascorbic Acid at 0.5mg are not different in a statistically significant way.  The alternative hypothesis is that the mean differences are statistically significant.
+
+```{r ttest0.5, echo=FALSE}
+#Welch Two Sample t-test 0.5mg Dose
+t.test(
+    length ~ supplement
+    ,data = dtToothGrowth[dose == 0.5]
+    ,paired = FALSE
+    ,var.equal = FALSE
+)
+```
+
+As the 95% confidence interval is above zero and the p-value is less than $\alpha = 0.05$ at 0.006359 we can reject $H_{0}$ and conclude there is a statistically significant difference in tooth length and that Orange Juice results in longer teeth than Ascorbic Acid.
+
+###1.0mg Dose Tooth Lenth by Supplement Mean Comparison
+The Null Hypothesis is that the mean tooth length values for Orange Juice and Ascorbic Acid at 1.0mg are not different in a statistically significant way.  The alternative hypothesis is that the mean differences are statistically significant.
+
+```{r ttest1.0, echo=FALSE}
+#Welch Two Sample t-test 1.0mg Dose
+t.test(
+    length ~ supplement
+    ,data = dtToothGrowth[dose == 1.0]
+    ,paired = FALSE
+    ,var.equal = FALSE
+)
+```
+
+As the 95% confidence interval is above zero and the p-value is less than $\alpha = 0.05$ at 0.001038 we can reject $H_{0}$ and conclude there is a statistically significant difference in tooth length and that Orange Juice results in longer teeth than Ascorbic Acid.
+
+###2.0mg Dose Tooth Lenth by Supplement Mean Comparison
+The Null Hypothesis is that the mean tooth length values for Orange Juice and Ascorbic Acid at 2.0mg are not different in a statistically significant way.  The alternative hypothesis is that the mean differences are statistically significant.
+
+```{r ttest2.0, echo=FALSE}
+#Welch Two Sample t-test 2.0mg Dose
+t.test(
+  length ~ supplement
+  ,data = dtToothGrowth[dose == 2.0]
+  ,paired = FALSE
+  ,var.equal = FALSE
+)
+```
+
+As the 95% confidence interval contains zero and the p-value is greater than $\alpha = 0.05$ at 0.9639 we cannot reject $H_{0}$ and conclude there is no statistically significant difference in tooth length between either supplement.
+
+##Conclusion
+Supplement type and dosage do have a statistically significant impact on tooth growth in guinea pigs. Orange Juice results in statistically significant higher mean tooth length than Ascorbic Acid at 0.5mg and 1.0mg dosages but was no different than Ascorbic Acid at the 2.0mg dosage.  However, regardless of dose and just comparing by supplement type (All up by supplement), no statistically significant difference was found between Orange Juice and Ascorbic Acid when examining the mean tooth lengths.
+
+##Appendix
+```{r loadlibs_appdx, ref.label="loadlibs", echo=TRUE, eval=FALSE}
+
+```
+
+```{r datasummary_appdx, ref.label="datasummary", echo=TRUE, eval=FALSE}
+
+```
+
+```{r violinplot_appdx, ref.label="violinplot", echo=TRUE, eval=FALSE}
+
+```
+
+```{r boxplot_appdx, ref.label="boxplot", echo=TRUE, eval=FALSE}
+
+```
+
+```{r ttest0.5_appdx, ref.label="ttest0.5", echo=TRUE, eval=FALSE}
+
+```
+
+```{r ttest1.0_appdx, ref.label="ttest1.0", echo=TRUE, eval=FALSE}
+
+```
+
+```{r ttest2.0_appdx, ref.label="ttest2.0", echo=TRUE, eval=FALSE}
+
+```
+
